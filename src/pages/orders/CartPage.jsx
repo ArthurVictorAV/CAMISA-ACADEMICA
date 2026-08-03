@@ -1,4 +1,4 @@
-import { useCartStore } from '../../context/useCartStore';
+import { useCartStore } from '../../store/useCartStore';
 import { Link } from 'react-router-dom';
 
 export default function CartPage() {
