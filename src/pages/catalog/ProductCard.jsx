@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { ShoppingCart, Check, ZoomIn } from "lucide-react";
 import ProductDetails from "./ProductDetails";
+import { useCartStore } from "../../store/useCartStore";
 
 export default function ProductCard({ produto, onAdicionarCarrinho }) {
+  const addItem = useCartStore((state) => state.addItem);
+
   const {
+    id,
     nome,
     preco,
     precoOriginal,
-    imagem =[],
+    imagem = [],
     tamanhos = ["P", "M", "G", "GG"],
     destaque,
   } = produto;
@@ -16,12 +20,15 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
   const [adicionado, setAdicionado] = useState(false);
   const [productDetailsAberto, setProductDetailsAberto] = useState(false);
 
-  const galeria = imagem.length > 0 ? imagem : ["/placeholder.png"];
+  // Trata caso imagem seja uma string única ou um array
+  const galeria = Array.isArray(imagem)
+    ? imagem.length > 0 ? imagem : ["/placeholder.png"]
+    : [imagem || "/placeholder.png"];
 
   const precoFormatado = new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(preco);
+  }).format(preco || 0);
 
   const precoOriginalFormatado = precoOriginal
     ? new Intl.NumberFormat("pt-BR", {
@@ -31,8 +38,21 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
     : null;
 
   const handleAdicionar = (e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
+
+    // 1. Adiciona à nossa store do Zustand
+    addItem({
+      id: id || produto.id,
+      title: nome,
+      price: preco,
+      image: galeria[0],
+      tamanho: tamanhoSelecionado,
+    });
+
+    // 2. Chama callback antigo se a pai estiver escutando
     onAdicionarCarrinho?.({ ...produto, tamanho: tamanhoSelecionado });
+
+    // 3. Feedback visual do botão
     setAdicionado(true);
     setTimeout(() => setAdicionado(false), 1500);
   };
@@ -40,7 +60,6 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
   return (
     <>
       <div className="group flex flex-col overflow-hidden rounded-2xl border border-amber-400/10 bg-slate-900 transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/30 hover:shadow-xl hover:shadow-black/40">
-       
         <div
           className="relative aspect-[4/5] cursor-zoom-in overflow-hidden bg-slate-800"
           onClick={() => setProductDetailsAberto(true)}
@@ -65,7 +84,7 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
               setProductDetailsAberto(true);
             }}
             className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-slate-950/70 text-white opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:opacity-100 hover:bg-amber-400 hover:text-slate-950"
-            aria-label="Ver detalhes da camisa"
+            aria-label="Ver detalhes do produto"
           >
             <ZoomIn size={16} />
           </button>
