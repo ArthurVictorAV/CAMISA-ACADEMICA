@@ -2,13 +2,18 @@ import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, User } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { logout } from "../../services/userService";
+import { logout } from "../../services/userService"; 
+import { useCartStore } from "../../store/useCartStore";
 
-export default function Header({ cartCount = 0 }) {
+export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Conecta diretamente com o Zustand para somar a quantidade total
+  const items = useCartStore((state) => state.cart);
+  const cartCount = items.reduce((acc, item) => acc + (item.quantity || 1), 0);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8);
