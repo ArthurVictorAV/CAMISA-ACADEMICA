@@ -80,9 +80,12 @@ export default function Header({ cartCount = 0 }) {
 
             {user ? (
               <div className="flex items-center gap-3">
-                <span className="text-slate-300 text-sm max-w-[120px] truncate">
+                <Link
+                  to="/perfil"
+                  className="text-slate-300 text-sm max-w-[120px] truncate hover:text-white transition-colors"
+                >
                   {user.displayName || user.email}
-                </span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="rounded-full border border-amber-400/40 px-4 py-1.5 text-amber-400 transition-colors duration-200 hover:bg-amber-400 hover:text-slate-950"
@@ -129,13 +132,22 @@ export default function Header({ cartCount = 0 }) {
           ))}
 
           {user ? (
-            <button
-              onClick={handleLogout}
-              className="mt-1 flex items-center gap-1.5 py-2 text-amber-400"
-            >
-              <User size={16} />
-              Sair ({user.displayName || user.email})
-            </button>
+            <>
+              <Link
+                to="/perfil"
+                onClick={() => setMobileOpen(false)}
+                className="py-2 text-slate-300 hover:text-white transition-colors"
+              >
+                Meu perfil
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="mt-1 flex items-center gap-1.5 py-2 text-amber-400"
+              >
+                <User size={16} />
+                Sair ({user.displayName || user.email})
+              </button>
+            </>
           ) : (
             <Link
               to="/login"
