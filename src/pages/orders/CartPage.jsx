@@ -1,130 +1,147 @@
-import { useCartStore } from '../../store/useCartStore';
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { useCartStore } from "../../store/useCartStore";
 
 export default function CartPage() {
-  const { cart, removeItem, updateQuantity, clearCart, getTotal } = useCartStore();
+  const { cart, removeItem, updateQuantity, clearCart, getTotal } =
+    useCartStore();
 
   const total = getTotal();
 
-  // Se o carrinho estiver vazio
   if (!cart || cart.length === 0) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Seu carrinho está vazio</h2>
-        <p className="text-gray-600 mb-6 text-center max-w-md">
-          Você ainda não adicionou nenhuma carteirinha ou item ao seu carrinho.
+      <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-900 border border-amber-400/10 mb-4">
+          <ShoppingBag size={28} className="text-slate-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">
+          Seu carrinho está vazio
+        </h2>
+        <p className="text-slate-400 mb-6 max-w-md">
+          Você ainda não adicionou nenhum item ao seu carrinho.
         </p>
         <Link
           to="/"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors shadow-sm"
+          className="rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold py-2.5 px-6 transition-colors"
         >
-          Ver Produtos / Serviços
+          Ver produtos
         </Link>
       </div>
     );
   }
 
-  // Se houver itens no carrinho
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Carrinho de Compras</h1>
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+        Carrinho de compras
+      </h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Lista dos Itens */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         <div className="lg:col-span-2 space-y-4">
           {cart.map((item) => (
             <div
               key={item.id}
-              className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-200 gap-4"
+              className="flex flex-col sm:flex-row items-center gap-4 rounded-xl border border-amber-400/10 bg-slate-900 p-4"
             >
-              {/* Imagem (se houver) */}
               {item.image && (
                 <img
                   src={item.image}
                   alt={item.title || item.nome}
-                  className="w-20 h-20 object-cover rounded-lg border border-gray-100"
+                  className="h-20 w-20 shrink-0 rounded-lg object-cover border border-slate-800"
                 />
               )}
 
-              {/* Informações do Item */}
-              <div className="flex-1 text-center sm:text-left">
-                <h3 className="font-semibold text-gray-800 text-lg">
-                  {item.title || item.nome || 'Item sem nome'}
+              <div className="flex-1 text-center sm:text-left min-w-0">
+                <h3 className="font-semibold text-white truncate">
+                  {item.title || item.nome || "Item sem nome"}
                 </h3>
-                <p className="text-gray-500 text-sm">
-                  R$ {Number(item.price || item.preco || 0).toFixed(2).replace('.', ',')} un.
+                {item.tamanho && (
+                  <p className="text-slate-500 text-xs mt-0.5">
+                    Tamanho: {item.tamanho}
+                  </p>
+                )}
+                <p className="text-slate-400 text-sm mt-1">
+                  R${" "}
+                  {Number(item.price || item.preco || 0)
+                    .toFixed(2)
+                    .replace(".", ",")}{" "}
+                  un.
                 </p>
               </div>
 
-              {/* Controles de Quantidade */}
-              <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                  className="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold transition-colors"
-                >
-                  -
-                </button>
-                <span className="px-4 py-1 font-semibold text-gray-800">{item.quantity}</span>
-                <button
-                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                  className="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold transition-colors"
-                >
-                  +
-                </button>
-              </div>
+              <div className="flex items-center gap-4 sm:gap-6">
+                <div className="flex items-center rounded-lg border border-slate-700 overflow-hidden">
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    className="flex h-8 w-8 items-center justify-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                    aria-label="Diminuir quantidade"
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <span className="w-8 text-center text-sm font-semibold text-white">
+                    {item.quantity}
+                  </span>
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    className="flex h-8 w-8 items-center justify-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                    aria-label="Aumentar quantidade"
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
 
-              {/* Subtotal do Item e Botão de Remover */}
-              <div className="flex items-center gap-4">
-                <span className="font-bold text-gray-900">
-                  R$ {((item.price || item.preco || 0) * item.quantity).toFixed(2).replace('.', ',')}
+                <span className="font-bold text-amber-400 whitespace-nowrap">
+                  R${" "}
+                  {((item.price || item.preco || 0) * item.quantity)
+                    .toFixed(2)
+                    .replace(".", ",")}
                 </span>
+
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
+                  className="text-slate-500 hover:text-red-400 transition-colors"
+                  aria-label="Remover item"
                 >
-                  Remover
+                  <Trash2 size={18} />
                 </button>
               </div>
             </div>
           ))}
 
-          <div className="flex justify-between items-center pt-2">
-            <button
-              onClick={clearCart}
-              className="text-sm text-gray-500 hover:text-red-600 transition-colors underline"
-            >
-              Esvaziar carrinho
-            </button>
-          </div>
+          <button
+            onClick={clearCart}
+            className="text-sm text-slate-500 hover:text-red-400 transition-colors underline"
+          >
+            Esvaziar carrinho
+          </button>
         </div>
 
-        {/* Resumo do Pedido */}
-        <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 h-fit space-y-4">
-          <h2 className="text-xl font-bold text-gray-800">Resumo do Pedido</h2>
+        <div className="bg-slate-900 border border-amber-400/10 rounded-xl p-6 h-fit space-y-4">
+          <h2 className="text-lg font-bold text-white">Resumo do pedido</h2>
 
-          <div className="space-y-2 text-sm border-b border-gray-200 pb-4">
-            <div className="flex justify-between text-gray-600">
+          <div className="space-y-2 text-sm border-b border-slate-800 pb-4">
+            <div className="flex justify-between text-slate-400">
               <span>Subtotal</span>
-              <span>R$ {total.toFixed(2).replace('.', ',')}</span>
+              <span>R$ {total.toFixed(2).replace(".", ",")}</span>
             </div>
-            <div className="flex justify-between text-gray-600">
-              <span>Taxa de Emissão</span>
-              <span className="text-green-600 font-medium">Grátis</span>
+            <div className="flex justify-between text-slate-400">
+              <span>Frete</span>
+              <span className="text-emerald-400 font-medium">Grátis</span>
             </div>
           </div>
 
-          <div className="flex justify-between items-center text-lg font-bold text-gray-900">
+          <div className="flex justify-between items-center text-lg font-bold text-white">
             <span>Total</span>
-            <span className="text-xl text-blue-600">
-              R$ {total.toFixed(2).replace('.', ',')}
+            <span className="text-xl text-amber-400">
+              R$ {total.toFixed(2).replace(".", ",")}
             </span>
           </div>
 
           <Link
             to="/checkout"
-            className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition-colors"
+            className="block w-full text-center rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold py-3 transition-colors"
           >
-            Avançar para Checkout
+            Avançar para checkout
           </Link>
         </div>
       </div>

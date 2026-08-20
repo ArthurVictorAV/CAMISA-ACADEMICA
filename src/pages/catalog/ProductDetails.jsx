@@ -32,7 +32,7 @@ export default function ProductDetails({
       onClick={onFechar}
     >
       <div
-        className="relative flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-slate-900 shadow-2xl md:flex-row"
+        className="relative flex w-full max-w-4xl max-h-[92vh] flex-col overflow-x-hidden overflow-y-auto rounded-2xl bg-slate-900 shadow-2xl md:max-h-[85vh] md:flex-row"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -60,12 +60,12 @@ export default function ProductDetails({
           </div>
 
           {imagens.length > 1 && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {imagens.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setImagemAtiva(i)}
-                  className={`h-16 w-16 overflow-hidden rounded-lg border-2 transition-colors ${
+                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
                     imagemAtiva === i ? "border-amber-400" : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                 >
