@@ -1,27 +1,20 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { RefreshCw } from "lucide-react";
 import { getProdutos } from "../../services/productsServices";
 import ProductCard from "./ProductCard";
+import ProductGridSkeleton from "../../components/ui/ProductGridSkeleton";
 
 export default function CatalogPage() {
-  const [produtos, setProdutos] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getProdutos()
-      .then((data) => setProdutos(data || []))
-      .catch((error) => console.error("Erro ao carregar produtos:", error))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <p className="text-slate-400 font-medium text-lg">
-          Carregando produtos...
-        </p>
-      </div>
-    );
-  }
+  const {
+    data: produtos,
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: ["produtos"],
+    queryFn: getProdutos,
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -29,7 +22,23 @@ export default function CatalogPage() {
         Catálogo de Produtos
       </h1>
 
-      {produtos.length === 0 ? (
+      {isLoading ? (
+        <ProductGridSkeleton />
+      ) : isError ? (
+        <div className="flex flex-col items-center gap-4 py-12 text-center">
+          <p className="text-slate-400">
+            Não foi possível carregar os produtos. Tente novamente.
+          </p>
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="flex items-center gap-2 rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-amber-300 disabled:opacity-60"
+          >
+            <RefreshCw size={16} className={isFetching ? "animate-spin" : ""} />
+            Tentar novamente
+          </button>
+        </div>
+      ) : produtos.length === 0 ? (
         <div className="text-center py-12 text-slate-400">
           Nenhum produto cadastrado até o momento.
         </div>
