@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { toast } from 'sonner';
 
 export const useCartStore = create((set, get) => ({
   // Estado inicial: lista de itens vazia
@@ -19,13 +20,19 @@ export const useCartStore = create((set, get) => ({
       // Se é novo, adiciona com quantidade 1
       set({ cart: [...currentCart, { ...product, quantity: 1 }] });
     }
+
+    toast.success(`${product.title || product.nome || 'Item'} adicionado ao carrinho`);
   },
 
   // Remover um item pelo ID
   removeItem: (productId) => {
+    const item = get().cart.find((i) => i.id === productId);
     set({
       cart: get().cart.filter((item) => item.id !== productId),
     });
+    if (item) {
+      toast(`${item.title || item.nome || 'Item'} removido do carrinho`, { icon: '🗑️' });
+    }
   },
 
   // Alterar a quantidade de um item (+1 ou -1)
@@ -42,7 +49,10 @@ export const useCartStore = create((set, get) => ({
   },
 
   // Limpar todo o carrinho
-  clearCart: () => set({ cart: [] }),
+  clearCart: () => {
+    set({ cart: [] });
+    toast('Carrinho esvaziado', { icon: '🧹' });
+  },
 
   // Calcular o total acumulado
   getTotal: () => {

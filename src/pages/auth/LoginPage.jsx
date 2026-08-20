@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "sonner";
 import { login } from "../../services/userService";
 
 export default function LoginPage() {
@@ -19,9 +20,12 @@ export default function LoginPage() {
 
     try {
       await login({ email: form.email, senha: form.senha });
+      toast.success("Login realizado com sucesso!");
       navigate("/");
     } catch (err) {
-      setErro(mensagemDeErro(err.code));
+      const mensagem = mensagemDeErro(err.code);
+      setErro(mensagem);
+      toast.error(mensagem);
     } finally {
       setCarregando(false);
     }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "sonner";
 import { registrar } from "../../services/userService";
 
 export default function RegisterPage() {
@@ -17,21 +18,28 @@ export default function RegisterPage() {
     setErro("");
 
     if (form.senha !== form.confirmarSenha) {
-      setErro("As senhas não coincidem.");
+      const mensagem = "As senhas não coincidem.";
+      setErro(mensagem);
+      toast.error(mensagem);
       return;
     }
 
     if (form.senha.length < 6) {
-      setErro("A senha precisa ter pelo menos 6 caracteres.");
+      const mensagem = "A senha precisa ter pelo menos 6 caracteres.";
+      setErro(mensagem);
+      toast.error(mensagem);
       return;
     }
 
     setCarregando(true);
     try {
       await registrar({ nome: form.nome, email: form.email, senha: form.senha });
+      toast.success("Conta criada com sucesso!");
       navigate("/");
     } catch (err) {
-      setErro(mensagemDeErro(err.code));
+      const mensagem = mensagemDeErro(err.code);
+      setErro(mensagem);
+      toast.error(mensagem);
     } finally {
       setCarregando(false);
     }

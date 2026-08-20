@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, User } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
 import { logout } from "../../services/userService"; 
 import { useCartStore } from "../../store/useCartStore";
@@ -22,9 +23,14 @@ export default function Header() {
   }, []);
 
   const handleLogout = async () => {
-    await logout();
-    setMobileOpen(false);
-    navigate("/");
+    try {
+      await logout();
+      toast.success("Você saiu da sua conta");
+      setMobileOpen(false);
+      navigate("/");
+    } catch (err) {
+      toast.error("Não foi possível sair. Tente novamente.");
+    }
   };
 
   const navLinkClass = ({ isActive }) =>
