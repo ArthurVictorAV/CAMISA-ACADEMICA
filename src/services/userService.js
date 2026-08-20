@@ -1,10 +1,13 @@
 import {
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
   signInWithEmailAndPassword,
   signOut,
+  updatePassword,
   updateProfile,
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 
 export async function registrar({ nome, email, senha }) {
@@ -29,4 +32,37 @@ export async function login({ email, senha }) {
 
 export async function logout() {
   await signOut(auth);
+}
+
+export async function buscarPerfil(uid) {
+  const referencia = doc(db, "usuarios", uid);
+  const snapshot = await getDoc(referencia);
+
+  if (!snapshot.exists()) {
+    return null;
+  }
+
+  return { id: snapshot.id, ...snapshot.data() };
+}
+
+export async function atualizarPerfil(uid, { nome, telefone }) {
+  const referencia = doc(db, "usuarios", uid);
+
+  await updateDoc(referencia, {
+    nome,
+    telefone: telefone ?? "",
+    atualizadoEm: new Date().toISOString(),
+  });
+
+  if (auth.currentUser && auth.currentUser.displayName !== nome) {
+    await updateProfile(auth.currentUser, { displayName: nome });
+  }
+}
+
+export async function alterarSenha(senhaAtual, novaSenha) {
+  const user = auth.currentUser;
+  const credencial = EmailAuthProvider.credential(user.email, senhaAtual);
+
+  await reauthenticateWithCredential(user, credencial);
+  await updatePassword(user, novaSenha);
 }
