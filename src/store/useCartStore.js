@@ -6,24 +6,38 @@ export const useCartStore = create((set, get) => ({
   cart: [],
 
   // Adicionar item ao carrinho
-  addItem: (product) => {
-    const currentCart = get().cart;
-    // Verifica se o item já está no carrinho
-    const existingIndex = currentCart.findIndex((item) => item.id === product.id);
+  addItem: (produto, tamanho, quantidade = 1) => {
+  set((state) => {
+    // Chave única = id do produto + tamanho escolhido
+    const existingItem = state.cart.find(
+      (item) => item.id === produto.id && item.tamanho === tamanho
+    );
 
-    if (existingIndex > -1) {
-      // Se já existe, apenas aumenta a quantidade
-      const updatedCart = [...currentCart];
-      updatedCart[existingIndex].quantity += 1;
-      set({ cart: updatedCart });
-    } else {
-      // Se é novo, adiciona com quantidade 1
-      set({ cart: [...currentCart, { ...product, quantity: 1 }] });
+    if (existingItem) {
+      // Já existe esse produto NESSE tamanho -> só incrementa quantidade
+      return {
+        cart: state.cart.map((item) =>
+          item.id === produto.id && item.tamanho === tamanho
+            ? { ...item, quantity: (item.quantity || 1) + quantidade }
+            : item
+        ),
+      };
     }
 
-    toast.success(`${product.title || product.nome || 'Item'} adicionado ao carrinho`);
-  },
-
+    // Produto novo OU mesmo produto em tamanho diferente -> nova entrada
+    return {
+      cart: [
+        ...state.cart,
+        {
+          ...produto,
+          tamanho,
+          quantity: quantidade,
+          cartItemId: `${produto.id}-${tamanho}`, // útil para key no React e remoção
+        },
+      ],
+    };
+  });
+},
   // Remover um item pelo ID
   removeItem: (productId) => {
     const item = get().cart.find((i) => i.id === productId);
