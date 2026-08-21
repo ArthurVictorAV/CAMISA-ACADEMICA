@@ -41,13 +41,19 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
     if (e) e.stopPropagation();
 
     // 1. Adiciona à nossa store do Zustand
-    addItem({
-      id: id || produto.id,
-      title: nome,
-      price: preco,
-      image: galeria[0],
-      tamanho: tamanhoSelecionado,
-    });
+    // IMPORTANTE: addItem espera 3 argumentos separados: (produto, tamanho, quantidade)
+    // Antes o tamanho ia dentro do objeto do produto e era ignorado pela store,
+    // fazendo o campo "tamanho" do item salvo sempre virar undefined.
+    addItem(
+      {
+        id: id || produto.id,
+        title: nome,
+        price: preco,
+        image: galeria[0],
+      },
+      tamanhoSelecionado,
+      1
+    );
 
     // 2. Chama callback antigo se a pai estiver escutando
     onAdicionarCarrinho?.({ ...produto, tamanho: tamanhoSelecionado });
