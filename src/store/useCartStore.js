@@ -39,28 +39,23 @@ export const useCartStore = create((set, get) => ({
   });
 },
   // Remover um item pelo ID
-  removeItem: (productId) => {
-    const item = get().cart.find((i) => i.id === productId);
-    set({
-      cart: get().cart.filter((item) => item.id !== productId),
-    });
-    if (item) {
-      toast(`${item.title || item.nome || 'Item'} removido do carrinho`, { icon: '🗑️' });
-    }
-  },
+  removeItem: (id, tamanho) => {
+  set((state) => ({
+    cart: state.cart.filter(
+      (item) => !(item.id === id && item.tamanho === tamanho)
+    ),
+  }));
+},
 
-  // Alterar a quantidade de um item (+1 ou -1)
-  updateQuantity: (productId, quantity) => {
-    if (quantity <= 0) {
-      get().removeItem(productId);
-      return;
-    }
-    set({
-      cart: get().cart.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      ),
-    });
-  },
+updateQuantity: (id, tamanho, novaQuantidade) => {
+  set((state) => ({
+    cart: state.cart.map((item) =>
+      item.id === id && item.tamanho === tamanho
+        ? { ...item, quantity: Math.max(1, novaQuantidade) }
+        : item
+    ),
+  }));
+},
 
   // Limpar todo o carrinho
   clearCart: () => {
@@ -70,6 +65,9 @@ export const useCartStore = create((set, get) => ({
 
   // Calcular o total acumulado
   getTotal: () => {
-    return get().cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  return get().cart.reduce(
+    (total, item) => total + Number(item.price || item.preco || 0) * item.quantity,
+      0
+    );
   },
 }));
