@@ -66,4 +66,5 @@ export const useCartStore = create((set, get) => ({
       0
     );
   },
+  
 }));
