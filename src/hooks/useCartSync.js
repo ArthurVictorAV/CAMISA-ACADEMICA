@@ -37,6 +37,21 @@ async function lerCarrinhoFirestore(uid) {
   const snap = await getDoc(ref);
   return snap.exists() ? snap.data().cart || [] : [];
 }
+async function lerCarrinhoFirestoreComRetry(uid, tentativas = 3, delayMs = 400) {
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      return await lerCarrinhoFirestore(uid);
+    } catch (erro) {
+      const ultimaTentativa = i === tentativas - 1;
+      // Só faz retry se for especificamente erro de permissão (race condition
+      // conhecida do Firebase logo após login); outros erros propagam na hora.
+      if (erro.code !== "permission-denied" || ultimaTentativa) {
+        throw erro;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+}
 
 async function salvarCarrinhoFirestore(uid, cart) {
   const ref = doc(db, "carrinhos", uid);
@@ -65,16 +80,17 @@ export function useCartSync() {
   const ignorarProximaGravacao = useRef(false);
 
   // Reage a login / logout / carregamento inicial
-  useEffect(() => {
-    if (carregando) return;
+useEffect(() => {
+  if (carregando) return;
 
-    async function sincronizar() {
-      const estadoAnterior = uidAnterior.current;
+  async function sincronizar() {
+    const estadoAnterior = uidAnterior.current;
 
+    try {
       if (user && !estadoAnterior) {
         // LOGIN (visitante -> logado, ou app abriu já logado)
         const carrinhoLocal = lerCarrinhoLocal();
-        const carrinhoFirestore = await lerCarrinhoFirestore(user.uid);
+        const carrinhoFirestore = await lerCarrinhoFirestoreComRetry(user.uid);
         const carrinhoMesclado = mesclarCarrinhos(carrinhoLocal, carrinhoFirestore);
 
         ignorarProximaGravacao.current = true;
@@ -92,12 +108,18 @@ export function useCartSync() {
         ignorarProximaGravacao.current = true;
         useCartStore.getState().setCart(lerCarrinhoLocal());
       }
-
+    } catch (erro) {
+      console.error("Erro ao sincronizar carrinho:", erro);
+      toast.error("Não foi possível sincronizar seu carrinho. Tente recarregar a página.");
+    } finally {
+      // Sempre atualiza, mesmo se a sincronização falhou, para não travar
+      // o hook num estado inconsistente (achando que ninguém está logado).
       uidAnterior.current = user ? user.uid : null;
     }
+  }
 
-    sincronizar();
-  }, [user, carregando]);
+  sincronizar();
+}, [user, carregando]);
 
   // Reage a mudanças no carrinho e persiste no lugar certo
   useEffect(() => {
