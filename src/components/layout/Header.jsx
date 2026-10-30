@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
 import { logout } from "../../services/userService"; 
 import { useCartStore } from "../../store/useCartStore";
+import { salvarCarrinhoPendente } from "../../hooks/useCartSync";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -24,6 +25,9 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
+      // Grava alterações do carrinho que ainda estão aguardando, enquanto o
+      // usuário ainda está logado.
+      await salvarCarrinhoPendente();
       await logout();
       toast.success("Você saiu da sua conta");
       setMobileOpen(false);

@@ -58,6 +58,38 @@ async function salvarCarrinhoFirestore(uid, cart) {
   await setDoc(ref, { cart }, { merge: true });
 }
 
+// Cliques seguidos em +/− geram várias mudanças no carrinho. Em vez de gravar
+// no Firestore a cada uma, esperamos o usuário parar por um instante e
+// gravamos só o estado final.
+const ATRASO_GRAVACAO_MS = 500;
+let gravacaoPendente = null; // { uid, cart, timer }
+
+function agendarGravacaoFirestore(uid, cart) {
+  if (gravacaoPendente) clearTimeout(gravacaoPendente.timer);
+  const timer = setTimeout(salvarCarrinhoPendente, ATRASO_GRAVACAO_MS);
+  gravacaoPendente = { uid, cart, timer };
+}
+
+function descartarGravacaoPendente() {
+  if (gravacaoPendente) clearTimeout(gravacaoPendente.timer);
+  gravacaoPendente = null;
+}
+
+// Grava imediatamente o que estiver aguardando. Deve ser chamada antes do
+// logout (depois dele o Firestore recusa a gravação) e quando a aba é
+// escondida/fechada.
+export async function salvarCarrinhoPendente() {
+  if (!gravacaoPendente) return;
+  const { uid, cart } = gravacaoPendente;
+  descartarGravacaoPendente();
+
+  try {
+    await salvarCarrinhoFirestore(uid, cart);
+  } catch {
+    toast.error("Não foi possível salvar seu carrinho.");
+  }
+}
+
 function mesclarCarrinhos(carrinhoA, carrinhoB) {
   const mapa = new Map();
 
@@ -100,6 +132,7 @@ useEffect(() => {
         limparCarrinhoLocal();
       } else if (!user && estadoAnterior) {
         // LOGOUT: zera em memória e no localStorage (Firestore do uid permanece intacto)
+        descartarGravacaoPendente();
         ignorarProximaGravacao.current = true;
         useCartStore.getState().setCart([]);
         limparCarrinhoLocal();
@@ -130,14 +163,21 @@ useEffect(() => {
       }
 
       if (uidAnterior.current) {
-        salvarCarrinhoFirestore(uidAnterior.current, state.cart).catch(() => {
-          toast.error("Não foi possível salvar seu carrinho.");
-        });
+        agendarGravacaoFirestore(uidAnterior.current, state.cart);
       } else {
         salvarCarrinhoLocal(state.cart);
       }
     });
 
-    return unsubscribe;
+    // Aba escondida ou fechando: grava o que estiver pendente.
+    const aoMudarVisibilidade = () => {
+      if (document.visibilityState === "hidden") salvarCarrinhoPendente();
+    };
+    document.addEventListener("visibilitychange", aoMudarVisibilidade);
+
+    return () => {
+      unsubscribe();
+      document.removeEventListener("visibilitychange", aoMudarVisibilidade);
+    };
   }, []);
 }
