@@ -7,7 +7,6 @@ export default function ProductDetails({
   onTamanhoChange,
   onAdicionarCarrinho,
   adicionado,
-  esgotado = false,
   onFechar,
 }) {
   const { nome, preco, imagens, tamanhos = ["P", "M", "G", "GG"], descricao } = produto;
@@ -106,18 +105,14 @@ export default function ProductDetails({
 
           <button
             onClick={onAdicionarCarrinho}
-            disabled={adicionado || esgotado}
+            disabled={adicionado}
             className={`mt-auto flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-colors ${
-              esgotado
-                ? "bg-slate-800 text-slate-500 cursor-not-allowed"
-                : adicionado
+              adicionado
                 ? "bg-emerald-500 text-white"
                 : "bg-amber-400 text-slate-950 hover:bg-amber-300"
             }`}
           >
-            {esgotado ? (
-              "Esgotado"
-            ) : adicionado ? (
+            {adicionado ? (
               <>
                 <Check size={16} /> Adicionado
               </>

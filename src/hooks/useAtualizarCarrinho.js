@@ -33,7 +33,7 @@ export function useAtualizarCarrinho() {
       }
       if (cancelado) return;
 
-      const { itens, problemas, estoques } = resultado;
+      const { itens, problemas } = resultado;
       const atuais = new Map(itens.map((item) => [chaveDoItem(item.produtoId, item.tamanho), item]));
       const removidos = new Set(
         problemas
@@ -45,9 +45,6 @@ export function useAtualizarCarrinho() {
       // carrinho enquanto a consulta estava em andamento).
       const carrinhoAtual = useCartStore.getState().cart;
       let mudou = false;
-      // Unidades que ainda cabem no estoque de cada produto, consumidas na
-      // ordem do carrinho.
-      const restante = { ...estoques };
       const novoCarrinho = carrinhoAtual
         .filter((item) => {
           const remover = removidos.has(chaveDoItem(item.id, item.tamanho));
@@ -58,30 +55,12 @@ export function useAtualizarCarrinho() {
           const atual = atuais.get(chaveDoItem(item.id, item.tamanho));
           if (!atual) return item;
           const imagem = atual.imagem || item.image;
-          // Infinity não é salvo como número; null = sem controle de estoque.
-          const estoque = Number.isFinite(estoques[item.id]) ? estoques[item.id] : null;
-          const quantidade = Math.min(item.quantity, restante[item.id]);
-          restante[item.id] -= quantidade;
-          if (
-            item.price === atual.preco &&
-            item.title === atual.nome &&
-            item.image === imagem &&
-            item.estoque === estoque &&
-            item.quantity === quantidade
-          ) {
+          if (item.price === atual.preco && item.title === atual.nome && item.image === imagem) {
             return item;
           }
           mudou = true;
-          return {
-            ...item,
-            price: atual.preco,
-            title: atual.nome,
-            image: imagem,
-            estoque,
-            quantity: quantidade,
-          };
-        })
-        .filter((item) => item.quantity > 0);
+          return { ...item, price: atual.preco, title: atual.nome, image: imagem };
+        });
 
       if (mudou) useCartStore.getState().setCart(novoCarrinho);
 
@@ -93,12 +72,6 @@ export function useAtualizarCarrinho() {
           toast.warning(`${nome} (tamanho ${problema.item.tamanho}) não está mais disponível e foi removido do carrinho.`);
         } else if (problema.tipo === "preco") {
           toast.info(`O preço de ${nome} mudou para ${formatarPreco(problema.precoAtual)}.`);
-        } else if (problema.tipo === "estoque") {
-          toast.warning(
-            problema.disponivel === 0
-              ? `${nome} esgotou e foi removido do carrinho.`
-              : `Só restam ${problema.disponivel} unidade(s) de ${nome}. Ajustamos a quantidade no carrinho.`
-          );
         }
       }
     }

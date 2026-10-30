@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useCartStore } from "../../store/useCartStore";
 import { useAtualizarCarrinho } from "../../hooks/useAtualizarCarrinho";
-import { estoqueDisponivel, quantidadeNoCarrinho } from "../../lib/estoque";
 
 export default function CartPage() {
   const { cart, removeItem, updateQuantity, clearCart, getTotal } =
@@ -44,8 +43,6 @@ export default function CartPage() {
           {cart.map((item) => {
             // Chave única: mesmo produto em tamanhos diferentes = itens distintos
             const itemKey = item.cartItemId || `${item.id}-${item.tamanho || "unico"}`;
-            const noLimiteDoEstoque =
-              quantidadeNoCarrinho(cart, item.id) >= estoqueDisponivel(item);
 
             return (
               <div
@@ -96,9 +93,7 @@ export default function CartPage() {
                       onClick={() =>
                         updateQuantity(item.id, item.tamanho, item.quantity + 1)
                       }
-                      disabled={noLimiteDoEstoque}
-                      title={noLimiteDoEstoque ? "Limite do estoque atingido" : undefined}
-                      className="flex h-8 w-8 items-center justify-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                      className="flex h-8 w-8 items-center justify-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
                       aria-label="Aumentar quantidade"
                     >
                       <Plus size={14} />
