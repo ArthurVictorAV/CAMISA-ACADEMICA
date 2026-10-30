@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useCartStore } from "../../store/useCartStore";
+import { useAtualizarCarrinho } from "../../hooks/useAtualizarCarrinho";
 
 export default function CartPage() {
   const { cart, removeItem, updateQuantity, clearCart, getTotal } =
     useCartStore();
+  useAtualizarCarrinho();
 
   const total = getTotal();
 
