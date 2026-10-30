@@ -164,3 +164,20 @@ export async function cancelarPedido(pedidoId) {
     atualizadoEm: serverTimestamp(),
   });
 }
+
+// ---- Admin (regra em firestore.rules: só admins leem todos e mudam status) ----
+
+// Todos os pedidos, do mais recente para o mais antigo.
+export async function listarTodosPedidos() {
+  const snapshot = await getDocs(collection(db, "pedidos"));
+  return snapshot.docs
+    .map(converterPedido)
+    .sort((a, b) => (b.criadoEm?.getTime() ?? 0) - (a.criadoEm?.getTime() ?? 0));
+}
+
+export async function atualizarStatusPedido(pedidoId, status) {
+  await updateDoc(doc(db, "pedidos", pedidoId), {
+    status,
+    atualizadoEm: serverTimestamp(),
+  });
+}

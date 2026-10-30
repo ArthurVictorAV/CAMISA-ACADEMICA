@@ -7,6 +7,8 @@ import ProfilePage from "../pages/profile/ProfilePage";
 import CheckoutPage from "../pages/orders/CheckoutPage";
 import NotFoundPage from "../pages/errors/NotFoundPage";
 import ProtectedRoute from "../components/routes/ProtectedRoute";
+import AdminRoute from "../components/routes/AdminRoute";
+import AdminDashboard from "../pages/admin/AdminDashboard";
 
 export default function AppRoutes() {
   return (
@@ -22,6 +24,14 @@ export default function AppRoutes() {
           <ProtectedRoute>
             <CheckoutPage />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
         }
       />
       <Route path="*" element={<NotFoundPage />} />

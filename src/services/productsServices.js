@@ -1,4 +1,12 @@
-import { collection, getDocs } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 export async function getProdutos() {
@@ -7,4 +15,25 @@ export async function getProdutos() {
     id: doc.id,
     ...doc.data(),
   }));
+}
+
+// As funções abaixo só funcionam para admins (regra em firestore.rules).
+
+export async function criarProduto(dados) {
+  const referencia = await addDoc(collection(db, "produtos"), {
+    ...dados,
+    criadoEm: serverTimestamp(),
+  });
+  return referencia.id;
+}
+
+export async function atualizarProduto(id, dados) {
+  await updateDoc(doc(db, "produtos", id), {
+    ...dados,
+    atualizadoEm: serverTimestamp(),
+  });
+}
+
+export async function excluirProduto(id) {
+  await deleteDoc(doc(db, "produtos", id));
 }

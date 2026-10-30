@@ -10,7 +10,7 @@ import { salvarCarrinhoPendente } from "../../hooks/useCartSync";
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   // Conecta diretamente com o Zustand para somar a quantidade total
@@ -47,6 +47,7 @@ export default function Header() {
   const links = [
     { to: "/", label: "Catálogo" },
     { to: "/carrinho", label: "Carrinho" },
+    ...(isAdmin ? [{ to: "/admin", label: "Admin" }] : []),
   ];
 
   return (
@@ -131,7 +132,7 @@ export default function Header() {
 
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ${
-          mobileOpen ? "max-h-60 border-t border-amber-400/10" : "max-h-0"
+          mobileOpen ? "max-h-80 border-t border-amber-400/10" : "max-h-0"
         }`}
       >
         <nav className="flex flex-col gap-1 px-4 py-3 text-sm font-medium">
