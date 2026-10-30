@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import CatalogPage from "../pages/catalog/CatalogPage";
+import ProductPage from "../pages/catalog/ProductPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
@@ -16,6 +17,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<CatalogPage />} />
+      <Route path="/produto/:id" element={<ProductPage />} />
       <Route path="/carrinho" element={<CartPage />} />
 
       {/* Só para visitantes */}

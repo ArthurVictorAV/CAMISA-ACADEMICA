@@ -1,29 +1,20 @@
 import { useState } from "react";
 import { ShoppingCart, Check, ZoomIn } from "lucide-react";
 import ProductDetails from "./ProductDetails";
-import { useCartStore } from "../../store/useCartStore";
+import { useAdicionarAoCarrinho } from "../../hooks/useAdicionarAoCarrinho";
 
-export default function ProductCard({ produto, onAdicionarCarrinho }) {
-  const addItem = useCartStore((state) => state.addItem);
-
+export default function ProductCard({ produto }) {
+  const { nome, preco, precoOriginal, destaque } = produto;
+  const carrinho = useAdicionarAoCarrinho(produto);
   const {
-    id,
-    nome,
-    preco,
-    precoOriginal,
-    imagem = [],
-    tamanhos = ["P", "M", "G", "GG"],
-    destaque,
-  } = produto;
-
-  const [tamanhoSelecionado, setTamanhoSelecionado] = useState(tamanhos[0]);
-  const [adicionado, setAdicionado] = useState(false);
+    tamanhos,
+    galeria,
+    tamanhoSelecionado,
+    setTamanhoSelecionado,
+    adicionado,
+    adicionar: handleAdicionar,
+  } = carrinho;
   const [productDetailsAberto, setProductDetailsAberto] = useState(false);
-
-  // Trata caso imagem seja uma string única ou um array
-  const galeria = Array.isArray(imagem)
-    ? imagem.length > 0 ? imagem : ["/placeholder.png"]
-    : [imagem || "/placeholder.png"];
 
   const precoFormatado = new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -36,32 +27,6 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
         currency: "BRL",
       }).format(precoOriginal)
     : null;
-
-  const handleAdicionar = (e) => {
-    if (e) e.stopPropagation();
-
-    // 1. Adiciona à nossa store do Zustand
-    // IMPORTANTE: addItem espera 3 argumentos separados: (produto, tamanho, quantidade)
-    // Antes o tamanho ia dentro do objeto do produto e era ignorado pela store,
-    // fazendo o campo "tamanho" do item salvo sempre virar undefined.
-    addItem(
-      {
-        id: id || produto.id,
-        title: nome,
-        price: preco,
-        image: galeria[0],
-      },
-      tamanhoSelecionado,
-      1
-    );
-
-    // 2. Chama callback antigo se a pai estiver escutando
-    onAdicionarCarrinho?.({ ...produto, tamanho: tamanhoSelecionado });
-
-    // 3. Feedback visual do botão
-    setAdicionado(true);
-    setTimeout(() => setAdicionado(false), 1500);
-  };
 
   return (
     <>
@@ -154,11 +119,8 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
 
       {productDetailsAberto && (
         <ProductDetails
-          produto={{ ...produto, imagens: galeria }}
-          tamanhoSelecionado={tamanhoSelecionado}
-          onTamanhoChange={setTamanhoSelecionado}
-          onAdicionarCarrinho={handleAdicionar}
-          adicionado={adicionado}
+          produto={produto}
+          carrinho={carrinho}
           onFechar={() => setProductDetailsAberto(false)}
         />
       )}

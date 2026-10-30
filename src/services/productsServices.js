@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   serverTimestamp,
   updateDoc,
@@ -15,6 +16,12 @@ export async function getProdutos() {
     id: doc.id,
     ...doc.data(),
   }));
+}
+
+// Um produto pelo ID, ou null se não existir.
+export async function getProduto(id) {
+  const snap = await getDoc(doc(db, "produtos", id));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
 // As funções abaixo só funcionam para admins (regra em firestore.rules).
