@@ -3,6 +3,9 @@ import { toast } from 'sonner';
 
 export const useCartStore = create((set, get) => ({
   cart: [],
+  // Vira true quando o useCartSync termina de carregar o carrinho
+  // (localStorage ou Firestore) pela primeira vez.
+  sincronizado: false,
 
   addItem: (produto, tamanho, quantidade = 1) => {
     set((state) => {

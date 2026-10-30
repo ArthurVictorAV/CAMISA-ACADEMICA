@@ -148,6 +148,8 @@ useEffect(() => {
       // Sempre atualiza, mesmo se a sincronização falhou, para não travar
       // o hook num estado inconsistente (achando que ninguém está logado).
       uidAnterior.current = user ? user.uid : null;
+      // Avisa as telas (ex.: checkout) que o carrinho já foi carregado.
+      useCartStore.setState({ sincronizado: true });
     }
   }
 
@@ -156,7 +158,10 @@ useEffect(() => {
 
   // Reage a mudanças no carrinho e persiste no lugar certo
   useEffect(() => {
-    const unsubscribe = useCartStore.subscribe((state) => {
+    const unsubscribe = useCartStore.subscribe((state, anterior) => {
+      // Só interessa mudança no carrinho (ignora, por exemplo, "sincronizado").
+      if (state.cart === anterior.cart) return;
+
       if (ignorarProximaGravacao.current) {
         ignorarProximaGravacao.current = false;
         return;
