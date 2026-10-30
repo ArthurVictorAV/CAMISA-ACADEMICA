@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import CatalogPage from "../pages/catalog/CatalogPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import CartPage from "../pages/orders/CartPage";
 import ProfilePage from "../pages/profile/ProfilePage";
 import CheckoutPage from "../pages/orders/CheckoutPage";
@@ -31,6 +32,15 @@ export default function AppRoutes() {
         element={
           <GuestRoute>
             <RegisterPage />
+          </GuestRoute>
+        }
+      />
+
+      <Route
+        path="/recuperar-senha"
+        element={
+          <GuestRoute>
+            <ForgotPasswordPage />
           </GuestRoute>
         }
       />

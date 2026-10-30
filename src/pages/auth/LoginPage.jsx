@@ -66,6 +66,7 @@ export default function LoginPage() {
               <label className="text-sm text-slate-300">Senha</label>
               <Link
                 to="/recuperar-senha"
+                state={location.state}
                 className="text-xs text-amber-400 hover:underline"
               >
                 Esqueceu a senha?

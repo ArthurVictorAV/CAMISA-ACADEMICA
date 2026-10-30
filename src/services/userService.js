@@ -2,6 +2,7 @@ import {
   createUserWithEmailAndPassword,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
   updatePassword,
@@ -28,6 +29,12 @@ export async function registrar({ nome, email, senha }) {
 export async function login({ email, senha }) {
   const credencial = await signInWithEmailAndPassword(auth, email, senha);
   return credencial.user;
+}
+
+// Envia o e-mail do Firebase com o link para criar uma nova senha.
+export async function enviarEmailRedefinicaoSenha(email) {
+  auth.languageCode = "pt-BR";
+  await sendPasswordResetEmail(auth, email);
 }
 
 export async function logout() {
