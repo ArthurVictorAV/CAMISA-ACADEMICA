@@ -1,5 +1,6 @@
 import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { estoqueDisponivel } from "../lib/estoque";
 
 const QUANTIDADE_MAXIMA_POR_ITEM = 99;
 
@@ -21,7 +22,9 @@ function primeiraImagem(imagem) {
 //   itens        -> itens prontos para o pedido, com preço atual
 //   total        -> soma calculada com os preços atuais
 //   problemas    -> lista do que mudou em relação ao carrinho
-//                   ({ tipo: "removido" | "preco" | "tamanho", item, precoAtual? })
+//                   ({ tipo: "removido" | "preco" | "tamanho" | "estoque",
+//                      item, precoAtual?, disponivel? })
+//   estoques     -> { [produtoId]: unidades disponíveis } (Infinity = sem controle)
 export async function validarCarrinho(cart) {
   const idsUnicos = [...new Set(cart.map((item) => item.id))];
 
@@ -76,11 +79,34 @@ export async function validarCarrinho(cart) {
     });
   }
 
+  // Estoque é por produto (todos os tamanhos somados).
+  const estoques = {};
+  for (const [produtoId, produto] of produtos) {
+    estoques[produtoId] = estoqueDisponivel(produto);
+  }
+
+  const pedidoPorProduto = new Map();
+  for (const item of itens) {
+    pedidoPorProduto.set(
+      item.produtoId,
+      (pedidoPorProduto.get(item.produtoId) ?? 0) + item.quantidade
+    );
+  }
+  for (const [produtoId, quantidade] of pedidoPorProduto) {
+    if (quantidade > estoques[produtoId]) {
+      problemas.push({
+        tipo: "estoque",
+        item: cart.find((item) => item.id === produtoId),
+        disponivel: estoques[produtoId],
+      });
+    }
+  }
+
   const total = arredondar(
     itens.reduce((soma, item) => soma + item.preco * item.quantidade, 0)
   );
 
-  return { itens, total, problemas };
+  return { itens, total, problemas, estoques };
 }
 
 // Cria o pedido usando SEMPRE os preços do Firestore.

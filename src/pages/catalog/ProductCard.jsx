@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ShoppingCart, Check, ZoomIn } from "lucide-react";
 import ProductDetails from "./ProductDetails";
 import { useCartStore } from "../../store/useCartStore";
+import { estoqueDisponivel } from "../../lib/estoque";
 
 export default function ProductCard({ produto, onAdicionarCarrinho }) {
   const addItem = useCartStore((state) => state.addItem);
@@ -15,6 +16,8 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
     tamanhos = ["P", "M", "G", "GG"],
     destaque,
   } = produto;
+
+  const esgotado = estoqueDisponivel(produto) <= 0;
 
   const [tamanhoSelecionado, setTamanhoSelecionado] = useState(tamanhos[0]);
   const [adicionado, setAdicionado] = useState(false);
@@ -44,16 +47,20 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
     // IMPORTANTE: addItem espera 3 argumentos separados: (produto, tamanho, quantidade)
     // Antes o tamanho ia dentro do objeto do produto e era ignorado pela store,
     // fazendo o campo "tamanho" do item salvo sempre virar undefined.
-    addItem(
+    const adicionados = addItem(
       {
         id: id || produto.id,
         title: nome,
         price: preco,
         image: galeria[0],
+        // null = sem controle de estoque (o Firestore não aceita undefined)
+        estoque: produto.estoque ?? null,
       },
       tamanhoSelecionado,
       1
     );
+    // Sem estoque: a store já avisou o cliente.
+    if (!adicionados) return;
 
     // 2. Chama callback antigo se a pai estiver escutando
     onAdicionarCarrinho?.({ ...produto, tamanho: tamanhoSelecionado });
@@ -77,6 +84,12 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
           />
 
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+          {esgotado && (
+            <span className="absolute bottom-3 left-3 rounded-full bg-slate-950/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-red-400 backdrop-blur-sm">
+              Esgotado
+            </span>
+          )}
 
           {destaque && (
             <span className="absolute left-3 top-3 rounded-full bg-amber-400 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-950">
@@ -130,14 +143,18 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
 
           <button
             onClick={handleAdicionar}
-            disabled={adicionado}
+            disabled={adicionado || esgotado}
             className={`mt-auto flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-colors duration-200 ${
-              adicionado
+              esgotado
+                ? "bg-slate-800 text-slate-500 cursor-not-allowed"
+                : adicionado
                 ? "bg-emerald-500 text-white"
                 : "bg-amber-400 text-slate-950 hover:bg-amber-300"
             }`}
           >
-            {adicionado ? (
+            {esgotado ? (
+              "Esgotado"
+            ) : adicionado ? (
               <>
                 <Check size={16} />
                 Adicionado
@@ -159,6 +176,7 @@ export default function ProductCard({ produto, onAdicionarCarrinho }) {
           onTamanhoChange={setTamanhoSelecionado}
           onAdicionarCarrinho={handleAdicionar}
           adicionado={adicionado}
+          esgotado={esgotado}
           onFechar={() => setProductDetailsAberto(false)}
         />
       )}
