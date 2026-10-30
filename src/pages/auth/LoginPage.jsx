@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { login } from "../../services/userService";
+import { destinoAposLogin } from "../../routes/destinoAposLogin";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ email: "", senha: "" });
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
@@ -21,7 +23,7 @@ export default function LoginPage() {
     try {
       await login({ email: form.email, senha: form.senha });
       toast.success("Login realizado com sucesso!");
-      navigate("/");
+      navigate(destinoAposLogin(location), { replace: true });
     } catch (err) {
       const mensagem = mensagemDeErro(err.code);
       setErro(mensagem);
@@ -91,7 +93,7 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-slate-400">
           Ainda não tem conta?{" "}
-          <Link to="/cadastro" className="text-amber-400 hover:underline">
+          <Link to="/cadastro" state={location.state} className="text-amber-400 hover:underline">
             Criar conta
           </Link>
         </p>

@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { registrar } from "../../services/userService";
+import { destinoAposLogin } from "../../routes/destinoAposLogin";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ nome: "", email: "", senha: "", confirmarSenha: "" });
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
@@ -35,7 +37,7 @@ export default function RegisterPage() {
     try {
       await registrar({ nome: form.nome, email: form.email, senha: form.senha });
       toast.success("Conta criada com sucesso!");
-      navigate("/");
+      navigate(destinoAposLogin(location), { replace: true });
     } catch (err) {
       const mensagem = mensagemDeErro(err.code);
       setErro(mensagem);
@@ -123,7 +125,7 @@ export default function RegisterPage() {
 
         <p className="mt-6 text-center text-sm text-slate-400">
           Já tem conta?{" "}
-          <Link to="/login" className="text-amber-400 hover:underline">
+          <Link to="/login" state={location.state} className="text-amber-400 hover:underline">
             Entrar
           </Link>
         </p>
