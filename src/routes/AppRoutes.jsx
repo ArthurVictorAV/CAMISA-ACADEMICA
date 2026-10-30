@@ -8,16 +8,42 @@ import CheckoutPage from "../pages/orders/CheckoutPage";
 import NotFoundPage from "../pages/errors/NotFoundPage";
 import ProtectedRoute from "../components/routes/ProtectedRoute";
 import AdminRoute from "../components/routes/AdminRoute";
+import GuestRoute from "../components/routes/GuestRoute";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<CatalogPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/cadastro" element={<RegisterPage />} />
       <Route path="/carrinho" element={<CartPage />} />
-      <Route path="/perfil" element={<ProfilePage />} />
+
+      {/* Só para visitantes */}
+      <Route
+        path="/login"
+        element={
+          <GuestRoute>
+            <LoginPage />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/cadastro"
+        element={
+          <GuestRoute>
+            <RegisterPage />
+          </GuestRoute>
+        }
+      />
+
+      {/* Exigem login */}
+      <Route
+        path="/perfil"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/checkout"
         element={
@@ -26,6 +52,8 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Exige login + conta em admins */}
       <Route
         path="/admin"
         element={

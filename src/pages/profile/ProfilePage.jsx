@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Lock, Package, User } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -16,16 +16,14 @@ const ABAS = [
 ];
 
 export default function ProfilePage() {
-  const { user, carregando: carregandoAuth } = useAuth();
+  // Acesso já garantido pelo ProtectedRoute (ver AppRoutes.jsx).
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   // Permite abrir direto numa aba, ex.: /perfil?aba=pedidos
   const abaInicial = ABAS.some((aba) => aba.id === searchParams.get("aba"))
     ? searchParams.get("aba")
     : "dados";
   const [abaAtiva, setAbaAtiva] = useState(abaInicial);
-
-  if (carregandoAuth) return null;
-  if (!user) return <Navigate to="/login" replace />;
 
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-10">
