@@ -2,8 +2,11 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "sonner";
 import AppRoutes from "./routes/AppRoutes";
 import Header from "./components/layout/Header";
+import { useCartSync } from "./hooks/useCartSync";
 
 function App() {
+  useCartSync();
+
   return (
     <BrowserRouter>
       <Toaster

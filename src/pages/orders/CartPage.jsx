@@ -38,75 +38,84 @@ export default function CartPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         <div className="lg:col-span-2 space-y-4">
-          {cart.map((item) => (
-            <div
-              key={item.id}
-              className="flex flex-col sm:flex-row items-center gap-4 rounded-xl border border-amber-400/10 bg-slate-900 p-4"
-            >
-              {item.image && (
-                <img
-                  src={item.image}
-                  alt={item.title || item.nome}
-                  className="h-20 w-20 shrink-0 rounded-lg object-cover border border-slate-800"
-                />
-              )}
+          {cart.map((item) => {
+            // Chave única: mesmo produto em tamanhos diferentes = itens distintos
+            const itemKey = item.cartItemId || `${item.id}-${item.tamanho || "unico"}`;
 
-              <div className="flex-1 text-center sm:text-left min-w-0">
-                <h3 className="font-semibold text-white truncate">
-                  {item.title || item.nome || "Item sem nome"}
-                </h3>
-                {item.tamanho && (
-                  <p className="text-slate-500 text-xs mt-0.5">
-                    Tamanho: {item.tamanho}
-                  </p>
+            return (
+              <div
+                key={itemKey}
+                className="flex flex-col sm:flex-row items-center gap-4 rounded-xl border border-amber-400/10 bg-slate-900 p-4"
+              >
+                {item.image && (
+                  <img
+                    src={item.image}
+                    alt={item.title || item.nome}
+                    className="h-20 w-20 shrink-0 rounded-lg object-cover border border-slate-800"
+                  />
                 )}
-                <p className="text-slate-400 text-sm mt-1">
-                  R${" "}
-                  {Number(item.price || item.preco || 0)
-                    .toFixed(2)
-                    .replace(".", ",")}{" "}
-                  un.
-                </p>
-              </div>
 
-              <div className="flex items-center gap-4 sm:gap-6">
-                <div className="flex items-center rounded-lg border border-slate-700 overflow-hidden">
-                  <button
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    className="flex h-8 w-8 items-center justify-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-                    aria-label="Diminuir quantidade"
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <span className="w-8 text-center text-sm font-semibold text-white">
-                    {item.quantity}
-                  </span>
-                  <button
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="flex h-8 w-8 items-center justify-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-                    aria-label="Aumentar quantidade"
-                  >
-                    <Plus size={14} />
-                  </button>
+                <div className="flex-1 text-center sm:text-left min-w-0">
+                  <h3 className="font-semibold text-white truncate">
+                    {item.title || item.nome || "Item sem nome"}
+                  </h3>
+                  {item.tamanho && (
+                    <p className="text-slate-500 text-xs mt-0.5">
+                      Tamanho: <span className="text-amber-400 font-medium">{item.tamanho}</span>
+                    </p>
+                  )}
+                  <p className="text-slate-400 text-sm mt-1">
+                    R${" "}
+                    {Number(item.price || item.preco || 0)
+                      .toFixed(2)
+                      .replace(".", ",")}{" "}
+                    un.
+                  </p>
                 </div>
 
-                <span className="font-bold text-amber-400 whitespace-nowrap">
-                  R${" "}
-                  {((item.price || item.preco || 0) * item.quantity)
-                    .toFixed(2)
-                    .replace(".", ",")}
-                </span>
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <div className="flex items-center rounded-lg border border-slate-700 overflow-hidden">
+                    <button
+                      onClick={() =>
+                        updateQuantity(item.id, item.tamanho, item.quantity - 1)
+                      }
+                      className="flex h-8 w-8 items-center justify-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                      aria-label="Diminuir quantidade"
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <span className="w-8 text-center text-sm font-semibold text-white">
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={() =>
+                        updateQuantity(item.id, item.tamanho, item.quantity + 1)
+                      }
+                      className="flex h-8 w-8 items-center justify-center text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                      aria-label="Aumentar quantidade"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
 
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="text-slate-500 hover:text-red-400 transition-colors"
-                  aria-label="Remover item"
-                >
-                  <Trash2 size={18} />
-                </button>
+                  <span className="font-bold text-amber-400 whitespace-nowrap">
+                    R${" "}
+                    {((item.price || item.preco || 0) * item.quantity)
+                      .toFixed(2)
+                      .replace(".", ",")}
+                  </span>
+
+                  <button
+                    onClick={() => removeItem(item.id, item.tamanho)}
+                    className="text-slate-500 hover:text-red-400 transition-colors"
+                    aria-label="Remover item"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <button
             onClick={clearCart}

@@ -2,60 +2,69 @@ import { create } from 'zustand';
 import { toast } from 'sonner';
 
 export const useCartStore = create((set, get) => ({
-  // Estado inicial: lista de itens vazia
   cart: [],
 
-  // Adicionar item ao carrinho
-  addItem: (product) => {
-    const currentCart = get().cart;
-    // Verifica se o item já está no carrinho
-    const existingIndex = currentCart.findIndex((item) => item.id === product.id);
+  addItem: (produto, tamanho, quantidade = 1) => {
+    set((state) => {
+      const existingItem = state.cart.find(
+        (item) => item.id === produto.id && item.tamanho === tamanho
+      );
 
-    if (existingIndex > -1) {
-      // Se já existe, apenas aumenta a quantidade
-      const updatedCart = [...currentCart];
-      updatedCart[existingIndex].quantity += 1;
-      set({ cart: updatedCart });
-    } else {
-      // Se é novo, adiciona com quantidade 1
-      set({ cart: [...currentCart, { ...product, quantity: 1 }] });
-    }
+      if (existingItem) {
+        return {
+          cart: state.cart.map((item) =>
+            item.id === produto.id && item.tamanho === tamanho
+              ? { ...item, quantity: (item.quantity || 1) + quantidade }
+              : item
+          ),
+        };
+      }
 
-    toast.success(`${product.title || product.nome || 'Item'} adicionado ao carrinho`);
-  },
-
-  // Remover um item pelo ID
-  removeItem: (productId) => {
-    const item = get().cart.find((i) => i.id === productId);
-    set({
-      cart: get().cart.filter((item) => item.id !== productId),
+      return {
+        cart: [
+          ...state.cart,
+          {
+            ...produto,
+            tamanho,
+            quantity: quantidade,
+            cartItemId: `${produto.id}-${tamanho}`,
+          },
+        ],
+      };
     });
-    if (item) {
-      toast(`${item.title || item.nome || 'Item'} removido do carrinho`, { icon: '🗑️' });
-    }
   },
 
-  // Alterar a quantidade de um item (+1 ou -1)
-  updateQuantity: (productId, quantity) => {
-    if (quantity <= 0) {
-      get().removeItem(productId);
-      return;
-    }
-    set({
-      cart: get().cart.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
+  removeItem: (id, tamanho) => {
+    set((state) => ({
+      cart: state.cart.filter(
+        (item) => !(item.id === id && item.tamanho === tamanho)
       ),
-    });
+    }));
   },
 
-  // Limpar todo o carrinho
+  updateQuantity: (id, tamanho, novaQuantidade) => {
+    set((state) => ({
+      cart: state.cart.map((item) =>
+        item.id === id && item.tamanho === tamanho
+          ? { ...item, quantity: Math.max(1, novaQuantidade) }
+          : item
+      ),
+    }));
+  },
+
   clearCart: () => {
     set({ cart: [] });
     toast('Carrinho esvaziado', { icon: '🧹' });
   },
 
-  // Calcular o total acumulado
+  // NOVO: substitui o carrinho inteiro sem toast — usado pela sincronização
+  setCart: (novoCarrinho) => set({ cart: novoCarrinho }),
+
   getTotal: () => {
-    return get().cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    return get().cart.reduce(
+      (total, item) => total + Number(item.price || item.preco || 0) * item.quantity,
+      0
+    );
   },
+  
 }));
