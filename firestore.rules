@@ -20,9 +20,92 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    function isDono(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function nomeValido(dados) {
+      return dados.nome is string
+          && dados.nome.size() > 0
+          && dados.nome.size() <= 100;
+    }
+
+    // O usuário só pode gravar os campos que o app realmente usa
+    // (ver userService.js). Qualquer outro campo, como "role" ou "admin",
+    // é recusado.
     match /usuarios/{userId} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == userId;
+      allow read: if isDono(userId);
+
+      // registrar(): nome, email, criadoEm
+      allow create: if isDono(userId)
+                    && request.resource.data.keys().hasOnly(['nome', 'email', 'criadoEm'])
+                    && nomeValido(request.resource.data)
+                    && request.resource.data.email is string
+                    && request.resource.data.email.lower() == request.auth.token.email.lower()
+                    && request.resource.data.criadoEm is string;
+
+      // atualizarPerfil(): nome, telefone, atualizadoEm
+      allow update: if isDono(userId)
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['nome', 'telefone', 'atualizadoEm'])
+                    && nomeValido(request.resource.data)
+                    && (!('telefone' in request.resource.data)
+                        || (request.resource.data.telefone is string
+                            && request.resource.data.telefone.size() <= 20));
+
+      allow delete: if false;
+    }
+
+    // Pedido criado pelo checkout. Formato esperado:
+    // {
+    //   userId: string (uid do dono),
+    //   itens: [{ produtoId, nome, preco, tamanho, quantidade, imagem }],
+    //   total: number,
+    //   endereco: map,
+    //   status: "pendente" | "pago" | "enviado" | "entregue" | "cancelado",
+    //   criadoEm: serverTimestamp(),
+    //   atualizadoEm: serverTimestamp()   (só em alterações de status)
+    // }
+    function statusValido(status) {
+      return status in ['pendente', 'pago', 'enviado', 'entregue', 'cancelado'];
+    }
+
+    function soMudaStatus() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'atualizadoEm'])
+          && request.resource.data.atualizadoEm == request.time;
+    }
+
+    match /pedidos/{pedidoId} {
+      // Dono vê os próprios pedidos; admin vê todos.
+      allow read: if isDono(resource.data.userId) || isAdmin();
+
+      // Cliente cria o pedido sempre como "pendente", em nome dele mesmo.
+      allow create: if isDono(request.resource.data.userId)
+                    && request.resource.data.keys()
+                         .hasOnly(['userId', 'itens', 'total', 'endereco', 'status', 'criadoEm'])
+                    && request.resource.data.keys()
+                         .hasAll(['userId', 'itens', 'total', 'endereco', 'status', 'criadoEm'])
+                    && request.resource.data.status == 'pendente'
+                    && request.resource.data.itens is list
+                    && request.resource.data.itens.size() > 0
+                    && request.resource.data.itens.size() <= 50
+                    && request.resource.data.total is number
+                    && request.resource.data.total > 0
+                    && request.resource.data.endereco is map
+                    && request.resource.data.criadoEm == request.time;
+
+      // Cliente só pode cancelar um pedido ainda pendente.
+      // Admin pode mudar o status para qualquer valor válido.
+      allow update: if soMudaStatus()
+                    && statusValido(request.resource.data.status)
+                    && (isAdmin()
+                        || (isDono(resource.data.userId)
+                            && resource.data.status == 'pendente'
+                            && request.resource.data.status == 'cancelado'));
+
+      // Pedido nunca é apagado (histórico).
+      allow delete: if false;
     }
 
     match /carrinhos/{uid} {
