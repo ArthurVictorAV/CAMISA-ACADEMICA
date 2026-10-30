@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { Lock, Package, User } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -7,6 +7,7 @@ import {
   atualizarPerfil,
   buscarPerfil,
 } from "../../services/userService";
+import OrderHistory from "../orders/OrderHistory";
 
 const ABAS = [
   { id: "dados", label: "Meus dados", icon: User },
@@ -16,7 +17,12 @@ const ABAS = [
 
 export default function ProfilePage() {
   const { user, carregando: carregandoAuth } = useAuth();
-  const [abaAtiva, setAbaAtiva] = useState("dados");
+  const [searchParams] = useSearchParams();
+  // Permite abrir direto numa aba, ex.: /perfil?aba=pedidos
+  const abaInicial = ABAS.some((aba) => aba.id === searchParams.get("aba"))
+    ? searchParams.get("aba")
+    : "dados";
+  const [abaAtiva, setAbaAtiva] = useState(abaInicial);
 
   if (carregandoAuth) return null;
   if (!user) return <Navigate to="/login" replace />;
@@ -319,12 +325,7 @@ function AbaPedidos() {
         Acompanhe o histórico e o status dos seus pedidos.
       </p>
 
-      <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-700 py-16 text-center">
-        <Package size={32} className="text-slate-600" />
-        <p className="text-slate-400 text-sm max-w-xs">
-          Em breve você poderá acompanhar seus pedidos por aqui.
-        </p>
-      </div>
+      <OrderHistory />
     </div>
   );
 }

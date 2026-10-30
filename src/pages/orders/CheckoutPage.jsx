@@ -213,9 +213,14 @@ export default function CheckoutPage() {
               <MessageCircle size={18} />
               Pagar via Pix no WhatsApp
             </a>
-            <Link to="/" className="text-sm text-slate-400 hover:text-white transition-colors">
-              Continuar comprando
-            </Link>
+            <div className="flex gap-4 text-sm">
+              <Link to="/perfil?aba=pedidos" className="text-slate-400 hover:text-white transition-colors">
+                Ver meus pedidos
+              </Link>
+              <Link to="/" className="text-slate-400 hover:text-white transition-colors">
+                Continuar comprando
+              </Link>
+            </div>
           </>
         ) : (
           <Link

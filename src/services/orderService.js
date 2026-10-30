@@ -1,4 +1,14 @@
-import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 const QUANTIDADE_MAXIMA_POR_ITEM = 99;
@@ -113,4 +123,44 @@ export async function criarPedido(uid, cart, endereco) {
   });
 
   return { id: referencia.id, itens, total };
+}
+
+// Status possíveis de um pedido (os mesmos aceitos em firestore.rules) e o
+// texto mostrado ao cliente e ao admin.
+export const STATUS_PEDIDO = {
+  pendente: "Aguardando pagamento",
+  pago: "Pagamento confirmado",
+  enviado: "Enviado",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+};
+
+function converterPedido(snap) {
+  const dados = snap.data();
+  return {
+    id: snap.id,
+    ...dados,
+    criadoEm: dados.criadoEm?.toDate?.() ?? null,
+    atualizadoEm: dados.atualizadoEm?.toDate?.() ?? null,
+  };
+}
+
+// Pedidos do cliente, do mais recente para o mais antigo.
+// A ordenação é feita aqui (e não com orderBy no Firestore) para não precisar
+// de índice composto; cada cliente tem poucos pedidos.
+export async function listarMeusPedidos(uid) {
+  const snapshot = await getDocs(
+    query(collection(db, "pedidos"), where("userId", "==", uid))
+  );
+  return snapshot.docs
+    .map(converterPedido)
+    .sort((a, b) => (b.criadoEm?.getTime() ?? 0) - (a.criadoEm?.getTime() ?? 0));
+}
+
+// O cliente só pode cancelar pedidos ainda pendentes (regra no Firestore).
+export async function cancelarPedido(pedidoId) {
+  await updateDoc(doc(db, "pedidos", pedidoId), {
+    status: "cancelado",
+    atualizadoEm: serverTimestamp(),
+  });
 }
