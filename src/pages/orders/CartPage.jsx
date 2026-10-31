@@ -137,16 +137,19 @@ export default function CartPage() {
             </div>
             <div className="flex justify-between text-slate-400">
               <span>Frete</span>
-              <span className="text-emerald-400 font-medium">Grátis</span>
+              <span className="text-slate-300">A combinar</span>
             </div>
           </div>
 
           <div className="flex justify-between items-center text-lg font-bold text-white">
-            <span>Total</span>
+            <span>Total dos produtos</span>
             <span className="text-xl text-amber-400">
               R$ {total.toFixed(2).replace(".", ",")}
             </span>
           </div>
+          <p className="text-xs text-slate-500 -mt-2">
+            O frete é calculado e combinado pelo WhatsApp após o pedido.
+          </p>
 
           <Link
             to="/checkout"

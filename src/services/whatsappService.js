@@ -25,12 +25,13 @@ export function linkWhatsAppDoPedido({ id, itens, total, endereco }) {
   const complemento = endereco.complemento ? `, ${endereco.complemento}` : "";
 
   const mensagem = [
-    `Olá! Acabei de fazer o pedido *#${numeroDoPedido(id)}* no site e quero pagar via Pix.`,
+    `Olá! Acabei de fazer o pedido *#${numeroDoPedido(id)}* no site. Quero combinar o frete e pagar via Pix.`,
     "",
     "*Itens:*",
     ...linhasItens,
     "",
-    `*Total:* ${formatarPreco(total)}`,
+    `*Total dos produtos:* ${formatarPreco(total)}`,
+    "*Frete:* a combinar",
     "",
     "*Entrega:*",
     endereco.destinatario,

@@ -195,13 +195,16 @@ export default function CheckoutPage() {
           </span>
         </p>
         <p className="text-slate-400 mb-6">
-          Total: <span className="text-white font-semibold">{formatarPreco(pedidoCriado.total)}</span>
+          Total dos produtos:{" "}
+          <span className="text-white font-semibold">{formatarPreco(pedidoCriado.total)}</span>
+          <span className="text-slate-500"> + frete a combinar</span>
         </p>
 
         {pedidoCriado.linkWhatsApp ? (
           <>
             <p className="text-slate-300 mb-4 max-w-md">
-              Para concluir, envie o pedido no nosso WhatsApp e faça o pagamento via Pix.
+              Para concluir, envie o pedido no nosso WhatsApp: lá combinamos o frete e
+              você faz o pagamento via Pix.
               A produção começa após a confirmação do pagamento.
             </p>
             <a
@@ -345,12 +348,12 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between text-slate-400">
               <span>Frete</span>
-              <span className="text-emerald-400 font-medium">Grátis</span>
+              <span className="text-slate-300">A combinar</span>
             </div>
           </div>
 
           <div className="flex justify-between items-center text-lg font-bold text-white">
-            <span>Total</span>
+            <span>Total dos produtos</span>
             <span className="text-xl text-amber-400">{formatarPreco(total)}</span>
           </div>
 
@@ -365,7 +368,8 @@ export default function CheckoutPage() {
           </button>
 
           <p className="text-xs text-center text-slate-500">
-            Pagamento via Pix: após confirmar, você será direcionado ao nosso WhatsApp.
+            Pagamento via Pix e frete combinados pelo WhatsApp: após confirmar, você será
+            direcionado à nossa conversa.
           </p>
 
           <Link to="/carrinho" className="block text-center text-sm text-slate-400 hover:text-white transition-colors">
