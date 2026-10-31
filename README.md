@@ -97,6 +97,16 @@ o botão de pagar pelo WhatsApp não aparece.
 
 ### Criar um admin
 
+Pelo script (precisa do `serviceAccountKey.json`, veja "Produtos de exemplo"):
+
+```bash
+node criar-admin.js email@exemplo.com            # torna admin
+node criar-admin.js --remover email@exemplo.com  # remove
+node criar-admin.js --listar                     # lista e confere os admins
+```
+
+Ou manualmente:
+
 1. No Firebase Console → Authentication, copie o **UID** da conta.
 2. No Firestore, crie a coleção `admins` com um documento cujo ID seja esse
    UID (o conteúdo pode ser só `nome: "..."`).
